@@ -3,7 +3,9 @@ import transforms as T
 
 class DetectionPresetTrain:
     def __init__(self, data_augmentation, hflip_prob=0.5, mean=(123., 117., 104.)):
-        if data_augmentation == 'hflip':
+        if data_augmentation == 'none':
+            self.transforms = T.ToTensor()
+        elif data_augmentation == 'hflip':
             self.transforms = T.Compose([
                 T.RandomHorizontalFlip(p=hflip_prob),
                 T.ToTensor(),

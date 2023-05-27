@@ -7,6 +7,8 @@ from typing import List, Tuple, Dict, Optional
 
 from model.image_list import ImageList
 from model.roi_heads import paste_masks_in_image
+from torchvision.transforms import functional as F
+from transforms import _flip_coco_person_keypoints
 
 
 @torch.jit.unused
@@ -87,8 +89,9 @@ class GeneralizedRCNNTransform(nn.Module):
             if image.dim() != 3:
                 raise ValueError("images is expected to be a list of 3d tensors "
                                  "of shape [C, H, W], got {}".format(image.shape))
-            image = self.normalize(image)
             image, target_index = self.resize(image, target_index)
+            image, target_index = self.random_horizontal_flip(image, target_index)
+            image = self.normalize(image)
             images[i] = image
             if targets is not None and target_index is not None:
                 targets[i] = target_index
@@ -141,6 +144,26 @@ class GeneralizedRCNNTransform(nn.Module):
             keypoints = target["keypoints"]
             keypoints = resize_keypoints(keypoints, (h, w), image.shape[-2:])
             target["keypoints"] = keypoints
+        return image, target
+
+    def random_horizontal_flip(self,
+                               image: Tensor,
+                               target: Optional[Dict[str, Tensor]] = None,
+                               p: float = 0.5
+                               ) -> Tuple[Tensor, Optional[Dict[str, Tensor]]]:
+        if torch.rand(1) >= p:
+            return image, target
+
+        image = F.hflip(image)
+        if target is not None:
+            width, _ = F.get_image_size(image)
+            target["boxes"][:, [0, 2]] = width - target["boxes"][:, [2, 0]]
+            if "masks" in target:
+                target["masks"] = target["masks"].flip(-1)
+            if "keypoints" in target:
+                keypoints = target["keypoints"]
+                keypoints = _flip_coco_person_keypoints(keypoints, width)
+                target["keypoints"] = keypoints
         return image, target
 
     def postprocess(self,
