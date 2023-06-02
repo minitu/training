@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+
+echo $CONT
+echo $DATADIR
+echo $BACKBONE_DIR
+echo $RESULTS_DIR
+
+export RESULTS_DIR="./results"
+mkdir -p ${RESULTS_DIR}
+
+# Copy and unsquash dataset
+srun --ntasks="${SLURM_JOB_NUM_NODES}" bash -c "rm -rf ${SCRATCH_SPACE}/local-root || true"
+if [[ "${LOCALDISK_FROM_SQUASHFS:-}" ]]; then
+  LOCAL_SQUASHFS="${LOCALDISK_FROM_SQUASHFS}"
+  srun --ntasks="${SLURM_JOB_NUM_NODES}" mkdir -p ${SCRATCH_SPACE}
+  # LOCALDISK_FROM_SQUASHFS should be the path/name of a squashfs file on /lustre
+  if [[ "${LOCALDISK_FROM_SQUASHFS}" == *lustre* ]] || [[ "${LOCALDISK_FROM_SQUASHFS}" == *mnt* ]]; then
+    echo "fetching ${LOCALDISK_FROM_SQUASHFS}"
+    srun --ntasks="${SLURM_JOB_NUM_NODES}" ./copy_sqsh.sh
+    LOCAL_SQUASHFS=${SCRATCH_SPACE}/tmp.sqsh
+  fi
+  echo "unsquashing ${LOCAL_SQUASHFS}"
+  time srun --ntasks="${SLURM_JOB_NUM_NODES}" unsquashfs -no-progress -dest ${SCRATCH_SPACE}/local-root "${LOCAL_SQUASHFS}"
+fi
+
+srun \
+    --mpi=none \
+    --ntasks="$(( DGXNNODES * DGXNGPU ))" \
+    --ntasks-per-node="${DGXNGPU}" \
+    --container-image="${CONT}" \
+    --container-workdir=/ssd \
+    --container-mounts=$(pwd):/ssd,${DATADIR}:/datasets/open-images-v6-mlperf,${BACKBONE_DIR}:/torch-home,${RESULTS_DIR}:/results \
+    ./run_and_time.sh
