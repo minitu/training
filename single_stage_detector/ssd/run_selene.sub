@@ -14,6 +14,6 @@ srun \
     --ntasks="$(( DGXNNODES * DGXNGPU ))" \
     --ntasks-per-node="${DGXNGPU}" \
     --container-image="${CONT}" \
-    --container-workdir=/ssd \
-    --container-mounts=$(pwd):/ssd,${DATADIR}:/datasets/open-images-v6-mlperf,${BACKBONE_DIR}:/root/.cache/torch,${RESULTS_DIR}:/results \
+    --container-workdir=/workspace/single_stage_detector/ssd \
+    --container-mounts=${DATADIR}:/datasets/open-images-v6-mlperf,${BACKBONE_DIR}:/root/.cache/torch,${RESULTS_DIR}:/results \
     ./run_and_time.sh
