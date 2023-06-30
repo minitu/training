@@ -2,13 +2,12 @@
 
 set -euxo pipefail
 
+export RESULTS_DIR="./results"
+mkdir -p ${RESULTS_DIR}
+
 echo $CONT
 echo $DATADIR
 echo $BACKBONE_DIR
-echo $RESULTS_DIR
-
-export RESULTS_DIR="./results"
-mkdir -p ${RESULTS_DIR}
 
 # Copy and unsquash dataset
 srun --ntasks="${SLURM_JOB_NUM_NODES}" bash -c "rm -rf ${SCRATCH_SPACE}/local-root || true"

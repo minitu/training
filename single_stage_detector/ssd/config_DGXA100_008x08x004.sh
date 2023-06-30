@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 ## DL params
-export BATCHSIZE=32
+export BATCHSIZE=4
 export NUMEPOCHS=${NUMEPOCHS:-8}
 export DATASET_DIR="/datasets/open-images-v6-mlperf"
 export EXTRA_PARAMS='--lr 0.0001 --output-dir=/results'
 
 ## System run parms
-export DGXNNODES=1
+export DGXNNODES=8
 export DGXSYSTEM=$(basename $(readlink -f ${BASH_SOURCE[0]}) | sed 's/^config_//' | sed 's/\.sh$//' )
 export WALLTIME=04:00:00
 
