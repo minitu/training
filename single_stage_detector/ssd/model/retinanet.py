@@ -328,7 +328,7 @@ class RetinaNet(nn.Module):
 
     def __init__(self, backbone, num_classes, data_layout='channels_first',
                  # transform parameters
-                 image_size=None, image_mean=None, image_std=None,
+                 image_size=None, image_mean=None, image_std=None, resize_first=False,
                  # Anchor parameters
                  anchor_generator=None, head=None,
                  # Detection parameters
@@ -380,7 +380,8 @@ class RetinaNet(nn.Module):
             image_mean = [0.485, 0.456, 0.406]
 
         self.transform = GeneralizedRCNNTransform(image_size=image_size,
-                                                  image_mean=image_mean, image_std=image_std)
+                                                  image_mean=image_mean, image_std=image_std,
+                                                  resize_first=resize_first)
         self.score_thresh = score_thresh
         self.nms_thresh = nms_thresh
         self.detections_per_img = detections_per_img
@@ -586,7 +587,7 @@ model_urls = {
 
 def retinanet_resnet50_fpn(num_classes, image_size, data_layout='channels_first',
                            pretrained=False, progress=True, pretrained_backbone=True,
-                           trainable_backbone_layers=None):
+                           trainable_backbone_layers=None, resize_first=False):
     """
     Constructs a RetinaNet model with a ResNet-50-FPN backbone.
 
@@ -645,7 +646,7 @@ def retinanet_resnet50_fpn(num_classes, image_size, data_layout='channels_first'
     backbone = resnet_fpn_backbone('resnet50', pretrained_backbone, returned_layers=[2, 3, 4],
                                    extra_blocks=LastLevelP6P7(256, 256, module_name="module.backbone.fpn.extra_blocks"),
                                    trainable_layers=trainable_backbone_layers)
-    model = RetinaNet(backbone=backbone, num_classes=num_classes, data_layout=data_layout, image_size=image_size)
+    model = RetinaNet(backbone=backbone, num_classes=num_classes, data_layout=data_layout, image_size=image_size, resize_first=resize_first)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls['retinanet_resnet50_fpn_coco'],
                                               progress=progress)
@@ -656,7 +657,7 @@ def retinanet_resnet50_fpn(num_classes, image_size, data_layout='channels_first'
 
 def retinanet_resnext50_32x4d_fpn(num_classes, image_size, data_layout='channels_first',
                                   pretrained=False, progress=True, pretrained_backbone=True,
-                                  trainable_backbone_layers=None):
+                                  trainable_backbone_layers=None, resize_first=False):
     """
     Constructs a RetinaNet model with a resnext50_32x4d-FPN backbone.
 
@@ -715,7 +716,7 @@ def retinanet_resnext50_32x4d_fpn(num_classes, image_size, data_layout='channels
     backbone = resnet_fpn_backbone('resnext50_32x4d', pretrained_backbone, returned_layers=[2, 3, 4],
                                    extra_blocks=LastLevelP6P7(256, 256, module_name="module.backbone.fpn.extra_blocks"),
                                    trainable_layers=trainable_backbone_layers)
-    model = RetinaNet(backbone=backbone, num_classes=num_classes, data_layout=data_layout, image_size=image_size)
+    model = RetinaNet(backbone=backbone, num_classes=num_classes, data_layout=data_layout, image_size=image_size, resize_first=resize_first)
     if pretrained:
         raise ValueError("Torchvision doesn't have a pretrained retinanet_resnext50_32x4d_fpn model")
 
@@ -724,7 +725,7 @@ def retinanet_resnext50_32x4d_fpn(num_classes, image_size, data_layout='channels
 
 def retinanet_resnet101_fpn(num_classes, image_size, data_layout='channels_first',
                             pretrained=False, progress=True, pretrained_backbone=True,
-                            trainable_backbone_layers=None):
+                            trainable_backbone_layers=None, resize_first=False):
     """
     Constructs a RetinaNet model with a ResNet-101-FPN backbone.
 
@@ -783,7 +784,7 @@ def retinanet_resnet101_fpn(num_classes, image_size, data_layout='channels_first
     backbone = resnet_fpn_backbone('resnet101', pretrained_backbone, returned_layers=[2, 3, 4],
                                    extra_blocks=LastLevelP6P7(256, 256, module_name="module.backbone.fpn.extra_blocks"),
                                    trainable_layers=trainable_backbone_layers)
-    model = RetinaNet(backbone=backbone, num_classes=num_classes, data_layout=data_layout, image_size=image_size)
+    model = RetinaNet(backbone=backbone, num_classes=num_classes, data_layout=data_layout, image_size=image_size, resize_first=resize_first)
     if pretrained:
         raise ValueError("Torchvision doesn't have a pretrained retinanet_resnet101_fpn model")
 
@@ -792,7 +793,7 @@ def retinanet_resnet101_fpn(num_classes, image_size, data_layout='channels_first
 
 def retinanet_resnext101_32x8d_fpn(num_classes, image_size, data_layout='channels_first',
                                    pretrained=False, progress=True, pretrained_backbone=True,
-                                   trainable_backbone_layers=None):
+                                   trainable_backbone_layers=None, resize_first=False):
     """
     Constructs a RetinaNet model with a resnext101_32x8d-FPN backbone.
 
@@ -851,7 +852,7 @@ def retinanet_resnext101_32x8d_fpn(num_classes, image_size, data_layout='channel
     backbone = resnet_fpn_backbone('resnext101_32x8d', pretrained_backbone, returned_layers=[2, 3, 4],
                                    extra_blocks=LastLevelP6P7(256, 256, module_name="module.backbone.fpn.extra_blocks"),
                                    trainable_layers=trainable_backbone_layers)
-    model = RetinaNet(backbone=backbone, num_classes=num_classes, data_layout=data_layout, image_size=image_size)
+    model = RetinaNet(backbone=backbone, num_classes=num_classes, data_layout=data_layout, image_size=image_size, resize_first=resize_first)
     if pretrained:
         raise ValueError("Torchvision doesn't have a pretrained retinanet_resnext101_32x8d_fpn model")
 
@@ -861,7 +862,7 @@ def retinanet_resnext101_32x8d_fpn(num_classes, image_size, data_layout='channel
 def retinanet_from_backbone(backbone,
                             num_classes=91, data_layout='channels_first', image_size=None,
                             pretrained=False, progress=True, pretrained_backbone=True,
-                            trainable_backbone_layers=None):
+                            trainable_backbone_layers=None, resize_first=False):
     if image_size is None:
         image_size = [800, 800]
 
@@ -869,21 +870,25 @@ def retinanet_from_backbone(backbone,
         return retinanet_resnet50_fpn(num_classes=num_classes, data_layout=data_layout, image_size=image_size,
                                       pretrained=pretrained, progress=progress,
                                       pretrained_backbone=pretrained_backbone,
-                                      trainable_backbone_layers=trainable_backbone_layers)
+                                      trainable_backbone_layers=trainable_backbone_layers,
+                                      resize_first=resize_first)
     elif backbone == "resnext50_32x4d":
         return retinanet_resnext50_32x4d_fpn(num_classes=num_classes, data_layout=data_layout, image_size=image_size,
                                              pretrained=pretrained, progress=progress,
                                              pretrained_backbone=pretrained_backbone,
-                                             trainable_backbone_layers=trainable_backbone_layers)
+                                             trainable_backbone_layers=trainable_backbone_layers,
+                                             resize_first=resize_first)
     elif backbone == "resnet101":
         return retinanet_resnet101_fpn(num_classes=num_classes, data_layout=data_layout, image_size=image_size,
                                        pretrained=pretrained, progress=progress,
                                        pretrained_backbone=pretrained_backbone,
-                                       trainable_backbone_layers=trainable_backbone_layers)
+                                       trainable_backbone_layers=trainable_backbone_layers,
+                                       resize_first=resize_first)
     elif backbone == "resnext101_32x8d":
         return retinanet_resnext101_32x8d_fpn(num_classes=num_classes, data_layout=data_layout, image_size=image_size,
                                               pretrained=pretrained, progress=progress,
                                               pretrained_backbone=pretrained_backbone,
-                                              trainable_backbone_layers=trainable_backbone_layers)
+                                              trainable_backbone_layers=trainable_backbone_layers,
+                                              resize_first=resize_first)
     else:
         raise ValueError(f"Unknown backbone {backbone}")

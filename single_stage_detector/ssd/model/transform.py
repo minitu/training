@@ -59,11 +59,12 @@ class GeneralizedRCNNTransform(nn.Module):
     """
 
     def __init__(self, image_size: Optional[Tuple[int, int]],
-                 image_mean: List[float], image_std: List[float],):
+                 image_mean: List[float], image_std: List[float], resize_first):
         super(GeneralizedRCNNTransform, self).__init__()
         self.image_size = image_size
         self.image_mean = image_mean
         self.image_std = image_std
+        self.resize_first = resize_first
 
     def forward(self,
                 images: List[Tensor],
@@ -89,9 +90,12 @@ class GeneralizedRCNNTransform(nn.Module):
             if image.dim() != 3:
                 raise ValueError("images is expected to be a list of 3d tensors "
                                  "of shape [C, H, W], got {}".format(image.shape))
+            if not self.resize_first:
+                image = self.normalize(image)
             image, target_index = self.resize(image, target_index)
-            image, target_index = self.random_horizontal_flip(image, target_index)
-            image = self.normalize(image)
+            if self.resize_first:
+                image, target_index = self.random_horizontal_flip(image, target_index)
+                image = self.normalize(image)
             images[i] = image
             if targets is not None and target_index is not None:
                 targets[i] = target_index

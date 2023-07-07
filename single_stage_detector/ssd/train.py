@@ -64,7 +64,8 @@ def parse_args(add_help=True):
     parser.add_argument('--data-path', default='/datasets/open-images-v6', help='dataset')
     parser.add_argument('--image-size', default=[800, 800], nargs=2, type=int,
                         help='Image size for training')
-    parser.add_argument('--data-augmentation', default="none", help='data augmentation policy')
+    parser.add_argument('--data-augmentation', default="hflip", help='data augmentation policy')
+    parser.add_argument('--resize-first', default=False, help='resize images first')
 
     # Train parameters
     parser.add_argument('--epochs', default=26, type=int, metavar='N',
@@ -108,6 +109,9 @@ def parse_args(add_help=True):
 
     args.eval_batch_size = args.eval_batch_size or args.batch_size
     args.eval_print_freq = args.eval_print_freq or args.print_freq
+
+    if args.resize_first:
+        args.data_augmentation = "none"
 
     return args
 
@@ -153,7 +157,8 @@ def main(args):
                                     image_size=args.image_size,
                                     data_layout=args.data_layout,
                                     pretrained=args.pretrained,
-                                    trainable_backbone_layers=args.trainable_backbone_layers)
+                                    trainable_backbone_layers=args.trainable_backbone_layers,
+                                    resize_first=args.resize_first)
     model.to(device)
 
     if args.data_layout == 'channels_last':
