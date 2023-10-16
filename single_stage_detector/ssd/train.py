@@ -65,7 +65,7 @@ def parse_args(add_help=True):
     parser.add_argument('--image-size', default=[800, 800], nargs=2, type=int,
                         help='Image size for training')
     parser.add_argument('--data-augmentation', default="hflip", help='data augmentation policy')
-    parser.add_argument('--resize-first', default=False, help='resize images first')
+    parser.add_argument('--resize-first', dest='resize_first', action="store_true", help='resize images first')
 
     # Train parameters
     parser.add_argument('--epochs', default=26, type=int, metavar='N',

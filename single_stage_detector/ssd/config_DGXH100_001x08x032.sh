@@ -4,7 +4,7 @@
 export BATCHSIZE=32
 export NUMEPOCHS=${NUMEPOCHS:-8}
 export DATASET_DIR="/datasets/open-images-v6-mlperf"
-export EXTRA_PARAMS='--lr 0.0001 --output-dir=/results'
+export EXTRA_PARAMS='--lr 0.0001 --output-dir=/results --resize-first'
 
 ## System run parms
 export DGXNNODES=1
